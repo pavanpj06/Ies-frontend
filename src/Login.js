@@ -16,13 +16,13 @@ const Login = () => {
     e.preventDefault();
     setError(null);
     try {
-      const response = await fetch("https://com.koyeb.app/login-form", {
+      const response = await fetch("https://your-app.koyeb.app/login-form", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      
+      
 
       if (!response.ok) {
         throw new Error("Invalid credentials. Please try again.");
