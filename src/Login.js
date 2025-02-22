@@ -12,29 +12,30 @@ const Login = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate(); // For redirection after login
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      const response = await fetch("https://your-app.koyeb.app/login-form", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      
-      
+  const BASE_URL = "https://com.koyeb.app";
 
-      if (!response.ok) {
-        throw new Error("Invalid credentials. Please try again.");
-      }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError(null);
+  try {
+    const response = await fetch(`${BASE_URL}/login-form`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await response.json();
-      alert("Login successful!");
-      navigate("/dashboard"); // Redirect user after successful login
-    } catch (err) {
-      setError(err.message);
+    if (!response.ok) {
+      throw new Error("Invalid credentials. Please try again.");
     }
-  };
+
+    const data = await response.json();
+    alert("Login successful!");
+    navigate("/dashboard");
+  } catch (err) {
+    console.error("Error during login:", err);
+    setError(err.message);
+  }
+};
 
   const handleGoogleSuccess = (response) => {
     console.log("Google Login Success:", response.profileObj);
