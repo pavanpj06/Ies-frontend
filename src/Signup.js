@@ -29,9 +29,10 @@ const Signup = () => {
       setMessageType("error");
       return;
     }
+    const BASE_URL = "https://com.koyeb.app";
 
     try {
-      const response = await fetch("http://localhost:8080/sign-up-the-form", {
+      const response = await fetch(`${BASE_URL}/sign-up-the-form`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
