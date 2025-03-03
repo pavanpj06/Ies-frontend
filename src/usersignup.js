@@ -29,8 +29,8 @@ const Signup = () => {
       setMessageType("error");
       return;
     }
-    const BASE_URL = "https://com.koyeb.app";
-
+    const BASE_URL = "http://localhost:8080";
+//https://com.koyeb.app
     try {
       const response = await fetch(`${BASE_URL}/sign-up-the-form`, {
         method: "POST",
@@ -48,10 +48,10 @@ const Signup = () => {
         setIsSubmitted(true); // Hide form
         setFormData({ firstName: "", lastName: "", email: "", phoneNumber: ""}); // Reset form
       } else if (response.status === 400) {
-        setMessage(data); // Show validation error
+        setMessage(data); 
         setMessageType("error");
       } else if (response.status === 409) {
-        setMessage(data); // Show duplicate email error
+        setMessage(data); 
         setMessageType("error");
       } else {
         throw new Error("Something went wrong. Please try again."); // Generic error

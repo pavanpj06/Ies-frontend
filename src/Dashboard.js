@@ -13,7 +13,7 @@ const Dashboard = () => {
   // Logout function
   const handleLogout = () => {
     alert("Logged out successfully!");
-    // Redirect to login page (update as needed)
+    
     window.location.href = "/";
   };
 

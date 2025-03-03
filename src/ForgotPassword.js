@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
-import { FaEnvelope } from "react-icons/fa"; // Import email icon
+import { FaEnvelope } from "react-icons/fa"; 
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");

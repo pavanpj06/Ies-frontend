@@ -12,8 +12,8 @@ const Login = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate(); // For redirection after login
 
-  const BASE_URL = "https://com.koyeb.app";
-
+  const BASE_URL = "http://localhost:8080";
+  //https://com.koyeb.app
 const handleSubmit = async (e) => {
   e.preventDefault();
   setError(null);
