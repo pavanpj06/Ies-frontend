@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
+
 // import { GoogleLogin } from "react-google-login";
 
 const clientId = "YOUR_GOOGLE_CLIENT_ID"; // Replace with your Google OAuth Client ID
@@ -12,8 +13,8 @@ const Login = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate(); // For redirection after login
 
-  const BASE_URL = "http://localhost:8080";
-  //https://com.koyeb.app
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
+  // https://com.koyeb.app
 const handleSubmit = async (e) => {
   e.preventDefault();
   setError(null);
@@ -23,14 +24,17 @@ const handleSubmit = async (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-
-    if (!response.ok) {
-      throw new Error("Invalid credentials. Please try again.");
+    const data = await response.json();
+    console.log(data);
+    if (response.ok) {
+      navigate("/dashboard-page");
+     
+    }else{
+      throw new Error(data.message);//"Invalid credentials. Please try again."
     }
 
-    const data = await response.json();
-    alert("Login successful!");
-    navigate("/dashboard");
+   
+   
   } catch (err) {
     console.error("Error during login:", err);
     setError(err.message);
@@ -92,10 +96,10 @@ const handleSubmit = async (e) => {
         </div> */}
 
         <p className="text-center mt-3">
-          <Link to="/forgot-password">Forgot Password?</Link>
+          <Link to="/forgot-password-page">Forgot Password?</Link>
         </p>
         <p className="text-center mt-2">
-          Don't have an account? <Link to="/signup">Sign up</Link>
+          Don't have an account? <Link to="/signup-form">Sign up</Link>
         </p>
       </div>
     </div>

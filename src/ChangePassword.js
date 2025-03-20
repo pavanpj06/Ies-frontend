@@ -21,8 +21,7 @@ const ChangePassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // ✅ Password Validation: At least 8 characters, 1 number, 1 special character
+    const BASE_URL = process.env.REACT_APP_BASE_URL;
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(formData.newPassword)) {
       setMessage("Password must be at least 8 characters long and include a number and a special character.");
@@ -30,7 +29,7 @@ const ChangePassword = () => {
       return;
     }
 
-    // ✅ Check if new password and confirm password match
+
     if (formData.newPassword !== formData.confirmPassword) {
       setMessage("New password and confirm password do not match.");
       setMessageType("error");
@@ -38,7 +37,7 @@ const ChangePassword = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/change-password", {
+      const response = await fetch(`${BASE_URL}/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

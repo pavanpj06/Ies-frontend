@@ -29,7 +29,7 @@ const Signup = () => {
       setMessageType("error");
       return;
     }
-    const BASE_URL = "http://localhost:8080";
+    const BASE_URL = process.env.REACT_APP_BASE_URL;
 //https://com.koyeb.app
     try {
       const response = await fetch(`${BASE_URL}/sign-up-the-form`, {
@@ -40,15 +40,16 @@ const Signup = () => {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.text(); // Read response from backend
+      const data = await response.json(); 
 
       if (response.status === 201) {
-        setMessage(data); // Show success message
+        setMessage(data.message); 
         setMessageType("success");
-        setIsSubmitted(true); // Hide form
+        setIsSubmitted(true); 
         setFormData({ firstName: "", lastName: "", email: "", phoneNumber: ""}); // Reset form
       } else if (response.status === 400) {
-        setMessage(data); 
+        const errorMessage = Object.values(data)[0]; 
+        setMessage(errorMessage); 
         setMessageType("error");
       } else if (response.status === 409) {
         setMessage(data); 
