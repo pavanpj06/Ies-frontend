@@ -6,6 +6,9 @@ import ForgotPassword from "./ForgotPassword";
 import ChangePassword from "./ChangePassword";
 import Dashboard from "./Dashboard";
 import Resetingpassword from "./ResetPassword"
+import UseraccountCreation from "./CreateAccountModal";
+import CreatePlanPage from "./CreatePlan";
+import ViewAccountspage from "./ViewAccounts";
 function App() {
   return (
     <Router>
@@ -16,6 +19,9 @@ function App() {
         <Route path="/reset-password" element={< ChangePassword/>} />
         <Route path="/dashboard-page" element={<Dashboard/>} />
 <Route path="/reset-password" element={<Resetingpassword/>} />
+<Route path="/user-account-creation" element={<UseraccountCreation/>} />
+<Route path="/create-plan-page" element={<CreatePlanPage/>} />
+<Route path="/View-Accounts-page" element={<ViewAccountspage/>}/>
       </Routes>
     </Router>
   );
