@@ -9,6 +9,15 @@ import Resetingpassword from "./ResetPassword"
 import UseraccountCreation from "./CreateAccountModal";
 import CreatePlanPage from "./CreatePlan";
 import ViewAccountspage from "./ViewAccounts";
+
+import EligibilityFormPage from "./EligibilityForm";
+
+import PlanSlectionPage from "./PlanSelection";
+import IncomeDetailsPage from "./IncomeDetails";
+import EducationDetailsPage from "./EducationDetails";
+import KidDetailsFormPage from "./KidDetailsForm";
+
+import CreateApplicationPage from "./CreateApplication";
 function App() {
   return (
     <Router>
@@ -22,6 +31,18 @@ function App() {
 <Route path="/user-account-creation" element={<UseraccountCreation/>} />
 <Route path="/create-plan-page" element={<CreatePlanPage/>} />
 <Route path="/View-Accounts-page" element={<ViewAccountspage/>}/>
+
+<Route path="/create-application-page" element={<CreateApplicationPage/>} />
+<Route path="/plan-selection-page" element={<PlanSlectionPage/>} />
+
+<Route path ="/income-details-page" element={<IncomeDetailsPage/>} />
+<Route path ="/education-details-page" element={<EducationDetailsPage/>} />
+
+
+<Route path="kid=details-form-page" element={<KidDetailsFormPage/>} />
+
+<Route path="/eligibility-form-page" element={<EligibilityFormPage/>} />
+        {/* Add other routes here */}
       </Routes>
     </Router>
   );
