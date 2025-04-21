@@ -3,53 +3,44 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 
-// import { GoogleLogin } from "react-google-login";
-
-const clientId = "YOUR_GOOGLE_CLIENT_ID"; // Replace with your Google OAuth Client ID
+// const clientId = "YOUR_GOOGLE_CLIENT_ID"; // Uncomment if using Google login
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // For redirection after login
+  const navigate = useNavigate();
 
   const BASE_URL = process.env.REACT_APP_BASE_URL;
-  // https://com.koyeb.app
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(null);
-  try {
-    const response = await fetch(`${BASE_URL}/login-form`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await response.json();
-    console.log(data);
-    if (response.ok) {
-      navigate("/dashboard-page");
-     
-    }else{
-      throw new Error(data.message);//"Invalid credentials. Please try again."
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log("Login Response:", data);
+
+      if (response.ok) {
+        // Save JWT and email to localStorage
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userEmail", data.email);
+
+        // Redirect to dashboard
+        navigate("/dashboard-page");
+      } else {
+        throw new Error(data.message || "Invalid credentials");
+      }
+    } catch (err) {
+      console.error("Login Error:", err);
+      setError(err.message);
     }
-
-   
-   
-  } catch (err) {
-    console.error("Error during login:", err);
-    setError(err.message);
-  }
-};
-
-  const handleGoogleSuccess = (response) => {
-    console.log("Google Login Success:", response.profileObj);
-    alert("Google Login Successful!");
-    navigate("/dashboard"); 
-  };
-
-  const handleGoogleFailure = (response) => {
-    console.log("Google Login Failed:", response);
-    setError("Google login failed. Please try again.");
   };
 
   return (
@@ -83,7 +74,7 @@ const handleSubmit = async (e) => {
           <button type="submit" className="btn btn-warning w-100">Login</button>
         </form>
 
-        {/* Google Login Button */}
+        {/* Optional Google Login - Add back if needed */}
         {/* <div className="d-flex justify-content-center my-3">
           <GoogleLogin
             clientId={clientId}
@@ -98,9 +89,9 @@ const handleSubmit = async (e) => {
         <p className="text-center mt-3">
           <Link to="/forgot-password-page">Forgot Password?</Link>
         </p>
-        <p className="text-center mt-2">
+        {/* <p className="text-center mt-2">
           Don't have an account? <Link to="/signup-form">Sign up</Link>
-        </p>
+        </p> */}
       </div>
     </div>
   );
