@@ -5,7 +5,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 const CreateAccountModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const show = location.pathname === "/user-account-creation";
+  const show = location.pathname.endsWith("/user-account-creation");
+
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -128,13 +129,13 @@ const CreateAccountModal = () => {
           <Row>
             <Col md={6}>
               <Form.Group controlId="fullName">
-                <Form.Label>Full Name</Form.Label>
+                <Form.Label>Full Name<span style={{ color: "red" }}>*</span></Form.Label>
                 <Form.Control name="fullName" type="text" placeholder="Full Name" onChange={handleChange} />
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group controlId="email">
-                <Form.Label>Email ID</Form.Label>
+                <Form.Label>Email ID<span style={{ color: "red" }}>*</span></Form.Label>
                 <Form.Control name="email" type="email" placeholder="Email" onChange={handleChange} />
               </Form.Group>
             </Col>
@@ -143,13 +144,13 @@ const CreateAccountModal = () => {
           <Row className="mt-3">
             <Col md={6}>
               <Form.Group controlId="mobileNumber">
-                <Form.Label>Mobile Number</Form.Label>
+                <Form.Label>Mobile Number<span style={{ color: "red" }}>*</span></Form.Label>
                 <Form.Control name="mobileNumber" type="text" placeholder="Phone No" onChange={handleChange} />
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group controlId="gender">
-                <Form.Label>Gender</Form.Label>
+                <Form.Label>Gender<span style={{ color: "red" }}>*</span></Form.Label>
                 <div>
                   <Form.Check inline label="Male" type="radio" name="gender" value="Male" onChange={handleChange} />
                   <Form.Check inline label="Female" type="radio" name="gender" value="Female" onChange={handleChange} />
@@ -161,19 +162,19 @@ const CreateAccountModal = () => {
           <Row className="mt-3">
             <Col md={6}>
               <Form.Group controlId="dob">
-                <Form.Label>DOB</Form.Label>
+                <Form.Label>DOB<span style={{ color: "red" }}>*</span></Form.Label>
                 <Form.Control name="dateOfBirth" type="date" onChange={handleChange} />
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group controlId="ssn">
-                <Form.Label>SSN</Form.Label>
+                <Form.Label>SSN<span style={{ color: "red" }}>*</span></Form.Label>
                 <Form.Control name="ssNumber" type="text" placeholder="SSN Number" onChange={handleChange} />
               </Form.Group>
             </Col>
             <Col md={6} className="mt-3">
               <Form.Group controlId="role-id">
-                <Form.Label>Role</Form.Label>
+                <Form.Label>Role<span style={{ color: "red" }}>*</span></Form.Label>
                 <Form.Control name="roleId" type="number" placeholder="Role Id" onChange={handleChange} />
               </Form.Group>
             </Col>

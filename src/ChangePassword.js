@@ -29,7 +29,6 @@ const ChangePassword = () => {
       return;
     }
 
-
     if (formData.newPassword !== formData.confirmPassword) {
       setMessage("New password and confirm password do not match.");
       setMessageType("error");
@@ -50,6 +49,10 @@ const ChangePassword = () => {
       if (response.status === 200) {
         setMessage("Password changed successfully!");
         setMessageType("success");
+
+        // Trigger the email notification
+        await sendPasswordChangeEmail();
+
         setTimeout(() => navigate("/"), 2000); // Redirect to login after success
       } else if (response.status === 400) {
         setMessage(data); // Show validation error
@@ -60,6 +63,28 @@ const ChangePassword = () => {
     } catch (error) {
       setMessage(error.message);
       setMessageType("error");
+    }
+  };
+
+  // Function to trigger the email after a successful password change
+  const sendPasswordChangeEmail = async () => {
+    try {
+      const BASE_URL = process.env.REACT_APP_BASE_URL;
+      const response = await fetch(`${BASE_URL}/send-password-change-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: "user@example.com" }), // Assuming you have the user's email available
+      });
+
+      if (response.status === 200) {
+        console.log("Password change email sent successfully.");
+      } else {
+        throw new Error("Failed to send email.");
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
     }
   };
 

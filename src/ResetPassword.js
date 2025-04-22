@@ -17,26 +17,52 @@ const ResetPassword = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
 
+    // Validation for password confirmation
     if (formData.newPassword !== formData.confirmPassword) {
       setMessage("New password and confirm password do not match.");
       setMessageType("error");
       return;
     }
 
-    console.log("Form Submitted:", formData);
-    setMessage("Password reset successfully!");
-    setMessageType("success");
+    try {
+      // Assuming the backend URL is set in the environment variables
+      const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+      // Send the form data to the backend API
+      const response = await fetch(`${BASE_URL}/unlock-account`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json(); // Assuming the response is JSON
+
+      if (response.status === 200) {
+        setMessage("Password reset successfully!");
+        setMessageType("success");
+      } else {
+        setMessage(data.message || "Failed to reset password.");
+        setMessageType("error");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setMessage("An error occurred while resetting the password.");
+      setMessageType("error");
+    }
   };
 
   return (
     <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div className="card p-4 shadow-lg border border-primary" style={{ width: "400px" }}>  
+      <div className="card p-4 shadow-lg border border-primary" style={{ width: "400px" }}>
         <h3 className="text-center mb-4">Reset Password</h3>
 
+        {/* Show error or success message */}
         {message && (
           <p className={`text-center ${messageType === "error" ? "text-danger" : "text-success"}`}>
             {message}
@@ -48,7 +74,7 @@ const ResetPassword = () => {
             <label className="form-label">Email</label>
             <input
               type="email"
-              className="form-control border border-danger" // Added border for debugging
+              className="form-control"
               name="email"
               value={formData.email}
               onChange={handleChange}
@@ -92,7 +118,9 @@ const ResetPassword = () => {
             />
           </div>
 
-          <button type="submit" className="btn btn-success w-100">Reset Password</button>
+          <button type="submit" className="btn btn-success w-100">
+            Reset Password
+          </button>
         </form>
       </div>
     </div>

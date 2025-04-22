@@ -1,31 +1,52 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Container, Form } from "react-bootstrap";
+import { Table, Button, Container, Form, Alert } from "react-bootstrap";
 import axios from "axios";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
 const ViewAccounts = () => {
   const [accounts, setAccounts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   // Fetch data from backend
   useEffect(() => {
-    axios.get("http://localhost:8080/api/accounts") // Change API endpoint accordingly
-      .then(response => {
-        setAccounts(response.data);
-      })
-      .catch(error => console.error("Error fetching data:", error));
-  }, []);
+    const fetchAccounts = async () => {
+      try {
+        const token = localStorage.getItem("token"); // Retrieve the token from storage
+        const response = await axios.get(`${BASE_URL}/fetch-all-user-accounts`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Set the token in the request header
+          },
+        });
+        setAccounts(response.data); // Store the data in the state
+      } catch (error) {
+        setError("Error fetching data. Please try again later.");
+      } finally {
+        setLoading(false); // Set loading to false after request is done
+      }
+    };
+
+    fetchAccounts();
+  }, [BASE_URL]);
 
   // Filter accounts based on search term
-  const filteredAccounts = accounts.filter(account =>
-    account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredAccounts = accounts.filter((account) =>
+    account.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     account.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    account.mobile.includes(searchTerm)
+    account.mobileNumber.includes(searchTerm)
   );
 
   return (
     <Container className="mt-4">
-      <h3>View Account</h3>
+      <h3>View Accounts</h3>
+      
+      {/* Display error message */}
+      {error && <Alert variant="danger">{error}</Alert>}
+
+      {/* Search form */}
       <div className="d-flex justify-content-between mb-3">
         <Form.Control
           type="text"
@@ -35,52 +56,61 @@ const ViewAccounts = () => {
         />
       </div>
 
-      <Table striped bordered hover responsive>
-        <thead className="table-light">
-          <tr>
-            <th>S.NO</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Mobile Number</th>
-            <th>Gender</th>
-            <th>SSN</th>
-            <th>Edit</th>
-            <th>Delete</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredAccounts.length > 0 ? (
-            filteredAccounts.map((account, index) => (
-              <tr key={account.id}>
-                <td>{index + 1}</td>
-                <td>{account.name}</td>
-                <td>{account.email}</td>
-                <td>{account.mobile}</td>
-                <td>{account.gender}</td>
-                <td>{account.ssn}</td>
-                <td>
-                  <Button variant="primary" size="sm">
-                    <FaEdit /> Edit
-                  </Button>
-                </td>
-                <td>
-                  <Button variant="danger" size="sm">
-                    <FaTrash /> Delete
-                  </Button>
-                </td>
-                <td>
-                  <Button variant="info" size="sm">Details</Button>
+      {/* Loading indicator */}
+      {loading ? (
+        <div>Loading...</div>
+      ) : (
+        <Table striped bordered hover responsive>
+          <thead className="table-light">
+            <tr>
+              <th>S.NO</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Mobile Number</th>
+              <th>Gender</th>
+              <th>SSN</th>
+              <th>Edit</th>
+              <th>Delete</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredAccounts.length > 0 ? (
+              filteredAccounts.map((account, index) => (
+                <tr key={account.id}>
+                  <td>{index + 1}</td>
+                  <td>{account.fullName}</td> {/* Displaying fullName instead of name */}
+                  <td>{account.email}</td>
+                  <td>{account.mobileNumber}</td> {/* Displaying mobileNumber */}
+                  <td>{account.gender}</td>
+                  <td>{account.ssNumber}</td> {/* Displaying ssNumber */}
+                  <td>
+                    <Button variant="primary" size="sm">
+                      <FaEdit /> Edit
+                    </Button>
+                  </td>
+                  <td>
+                    <Button variant="danger" size="sm">
+                      <FaTrash /> Delete
+                    </Button>
+                  </td>
+                  <td>
+                    <Button variant="info" size="sm">
+                      Details
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="9" className="text-center">
+                  No data found
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="9" className="text-center">No data found</td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+            )}
+          </tbody>
+        </Table>
+      )}
     </Container>
   );
 };
