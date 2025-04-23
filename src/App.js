@@ -8,7 +8,7 @@ import ChangePassword from "./ChangePassword";
 import ResettingPassword from "./ResetPassword";
 
 import Dashboard from "./Dashboard";
-import UseraccountCreation from "./CreateAccountModal";
+import CreateAccountPage from "./Pages/CreateAccountPage";
 import CreatePlanPage from "./CreatePlan";
 import ViewAccountspage from "./ViewAccounts";
 import CreateApplicationPage from "./CreateApplication";
@@ -31,7 +31,7 @@ function App() {
 
         {/* Dashboard and nested pages */}
         <Route path="/dashboard-page" element={<Dashboard />}>
-          <Route path="user-account-creation" element={<UseraccountCreation />} />
+          <Route path="user-account-creation" element={<CreateAccountPage/>} />
           <Route path="create-plan-page" element={<CreatePlanPage />} />
           <Route path="view-accounts-page" element={<ViewAccountspage />} />
           <Route path="create-application-page" element={<CreateApplicationPage />} />

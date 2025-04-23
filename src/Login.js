@@ -29,9 +29,11 @@ const Login = () => {
 
       if (response.ok) {
         // Save JWT and email to localStorage
+        console.log(data.token);
         localStorage.setItem("token", data.token);
         localStorage.setItem("userEmail", data.email);
-
+        // const emailMatch = data.message.match(/email=([^&]+)/);
+        // const email = emailMatch ? decodeURIComponent(emailMatch[1]) : null;
         // Redirect to dashboard
         navigate("/dashboard-page");
       } else {

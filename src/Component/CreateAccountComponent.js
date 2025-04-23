@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal, Button, Form, Row, Col, Alert, Spinner } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const CreateAccountModal = () => {
+const CreateAccountComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const show = location.pathname.endsWith("/user-account-creation");
@@ -61,7 +61,7 @@ const CreateAccountModal = () => {
       setErrors(clientSideErrors);
       return;
     }
-
+    
     try {
       setLoading(true);
 
@@ -200,4 +200,4 @@ const CreateAccountModal = () => {
   );
 };
 
-export default CreateAccountModal;
+export default CreateAccountComponent;
