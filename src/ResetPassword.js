@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useNavigate } from "react-router-dom";
+
+
+
 
 const ResetPassword = () => {
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     tempPassword: "",
@@ -20,7 +27,7 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
-
+   
     // Validation for password confirmation
     if (formData.newPassword !== formData.confirmPassword) {
       setMessage("New password and confirm password do not match.");
@@ -44,8 +51,12 @@ const ResetPassword = () => {
       const data = await response.json(); // Assuming the response is JSON
 
       if (response.status === 200) {
-        setMessage("Password reset successfully!");
-        setMessageType("success");
+        setMessage(data.message);
+        setTimeout(() => {
+          console.log("Navigating to /...");
+          navigate("/");
+        }, 2000);
+        
       } else {
         setMessage(data.message || "Failed to reset password.");
         setMessageType("error");

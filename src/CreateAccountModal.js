@@ -92,7 +92,9 @@ const CreateAccountModal = () => {
         // Extract all validation messages
         const errorMessages = Object.values(data);
         setErrors(errorMessages);
-      } else {
+      }else if (response.status === 409) 
+        setErrors([data.message]);
+         else {
         setErrors(["Something went wrong. Please try again."]);
       }
     } catch (error) {
