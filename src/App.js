@@ -17,7 +17,7 @@ import IncomeDetailsPage from "./IncomeDetails";
 import EducationDetailsPage from "./EducationDetails";
 import KidDetailsFormPage from "./KidDetailsForm";
 import EligibilityFormPage from "./EligibilityForm";
-
+import ViewPlansPage from "./ViewPlans";
 function App() {
   return (
     <Router>
@@ -36,6 +36,8 @@ function App() {
           <Route path="view-accounts-page" element={<ViewAccountspage />} />
           <Route path="create-application-page" element={<CreateApplicationPage />} />
           <Route path="plan-selection-page" element={<PlanSelectionPage />} />
+
+          <Route path="view-plans" element={<ViewPlansPage />} />
           <Route path="income-details-page" element={<IncomeDetailsPage />} />
           <Route path="education-details-page" element={<EducationDetailsPage />} />
           <Route path="kid-details-form-page" element={<KidDetailsFormPage />} />

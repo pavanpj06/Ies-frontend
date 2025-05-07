@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Modal, Button, Form, Row, Col, Alert, Spinner } from "react-bootstrap";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const CreateAccountComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const show = location.pathname.endsWith("/user-account-creation");
-
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -49,57 +49,50 @@ const CreateAccountComponent = () => {
     setErrors([]);
     setSuccessMessage("");
 
-    // Reformat the dateOfBirth to MM/dd/yyyy format
     const formattedDate = new Date(formData.dateOfBirth);
     const formattedDateString = `${formattedDate.getMonth() + 1}/${formattedDate.getDate()}/${formattedDate.getFullYear()}`;
 
-    // Update the formData with the formatted date
-    setFormData(prev => ({ ...prev, dateOfBirth: formattedDateString }));
+    const payload = { ...formData, dateOfBirth: formattedDateString };
 
     const clientSideErrors = validateForm();
     if (clientSideErrors.length > 0) {
       setErrors(clientSideErrors);
       return;
     }
-    
+
     try {
       setLoading(true);
-
-      // Retrieve the JWT token from localStorage
-     
       const token = localStorage.getItem("token");
-      console.log("JWT Token: ", token);
-      const response = await fetch(`${BASE_URL}/account-creation`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // Add the token to the headers
-        },
-        body: JSON.stringify(formData)
-      });
 
-      const data = await response.json();
+      const response = await axios.post(
+        `${BASE_URL}/account-creation`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        }
+      );
 
-      if (response.ok) {
-        setErrors([]);
-        setSuccessMessage(data.message);
-
-        // Delay close to show success message
-        setTimeout(() => {
-          handleClose();
-        }, 2000);
-      } else if (response.status === 400 && typeof data === "object") {
-        // Extract all validation messages
-        const errorMessages = Object.values(data);
-        setErrors(errorMessages);
-      }else if (response.status === 409) 
-        setErrors([data.message]);
-         else {
-        setErrors(["Something went wrong. Please try again."]);
+      if (response.status === 200 || response.status === 201) {
+        setSuccessMessage(response.data.message || "Account created successfully!");
+        setTimeout(() => handleClose(), 2000);
       }
     } catch (error) {
-      console.error("Error creating account:", error);
-      setErrors(["Failed to create account. Please try again later."]);
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 400 && typeof data === "object") {
+          setErrors(Object.values(data));
+        } else if (status === 409) {
+          setErrors([data.message]);
+        } else {
+          setErrors(["Something went wrong. Please try again."]);
+        }
+      } else {
+        console.error("Axios error:", error);
+        setErrors(["Failed to create account. Please try again later."]);
+      }
     } finally {
       setLoading(false);
     }
@@ -123,9 +116,7 @@ const CreateAccountComponent = () => {
           )}
 
           {successMessage && (
-            <Alert variant="success">
-              {successMessage}
-            </Alert>
+            <Alert variant="success">{successMessage}</Alert>
           )}
 
           <Row>

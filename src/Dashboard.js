@@ -2,7 +2,7 @@ import React from "react";
 import { Container, Row, Col, Card, Navbar, Nav, Form, InputGroup, Accordion } from "react-bootstrap";
 import { FaSearch, FaShoppingCart, FaMoneyBill, FaUsers, FaHeart, FaBars } from "react-icons/fa";
 import { BiClipboard } from "react-icons/bi";
-import { Outlet } from "react-router-dom"; // ✅ import this
+import { Outlet } from "react-router-dom"; 
 
 const Dashboard = () => {
   return (
