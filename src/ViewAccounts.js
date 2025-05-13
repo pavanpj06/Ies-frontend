@@ -1,38 +1,47 @@
-import React, { useEffect, useState } from "react";
-import { Table, Button, Container, Form, Alert, Spinner } from "react-bootstrap";
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  Table,
+  Button,
+  Container,
+  Form,
+  Alert,
+  Spinner,
+  Row,
+  Col,
+} from "react-bootstrap";
 import axios from "axios";
 import { FaEdit, FaTrash } from "react-icons/fa";
+
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const ViewAccounts = () => {
   const [accounts, setAccounts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [editingAccountId, setEditingAccountId] = useState(null);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
 
-  const BASE_URL = process.env.REACT_APP_BASE_URL;
-
   useEffect(() => {
     fetchAccounts();
-  }, [page, size, BASE_URL]);
+    // eslint-disable-next-line
+  }, [page, size]);
 
   const fetchAccounts = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${BASE_URL}/fetch-all-user-accounts?page=${page}&size=${size}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setAccounts(response.data.content);
-      setTotalPages(response.data.totalPages);
-      setPage(response.data.number);
+      const { data } = await axios.get(
+        `${BASE_URL}/fetch-all-user-accounts?page=${page}&size=${size}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAccounts(data.content);
+      setTotalPages(data.totalPages);
+      setPage(data.number);
       setError(null);
-    } catch (error) {
+    } catch {
       setError("Error fetching data. Please try again later.");
     } finally {
       setLoading(false);
@@ -40,58 +49,81 @@ const ViewAccounts = () => {
   };
 
   const handleDelete = async (userId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this account?");
-    if (!confirmDelete) return;
-
+    if (!window.confirm("Are you sure you want to delete this account?")) return;
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${BASE_URL}/delete-by-id/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      // Refresh data after deletion
       fetchAccounts();
-    } catch (error) {
+    } catch {
       alert("Failed to delete account. Please try again.");
     }
   };
 
-  const filteredAccounts = accounts.filter((account) =>
-    account.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    account.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    account.mobileNumber.includes(searchTerm)
-  );
+  const handleEdit = (accountId) => {
+    setEditingAccountId((prev) => (prev === accountId ? null : accountId));
+  };
+
+  const handleChange = (e, accountId) => {
+    const { name, value } = e.target;
+    setAccounts((prev) =>
+      prev.map((acc) => (acc.id === accountId ? { ...acc, [name]: value } : acc))
+    );
+  };
+
+  const handleSave = async (account) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`${BASE_URL}/edit-user-account/${account.id}`, account, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEditingAccountId(null);
+      fetchAccounts();
+    } catch {
+      alert("Failed to save changes. Please try again.");
+    }
+  };
+
+  const filteredAccounts = useMemo(() => {
+    const lowerTerm = searchTerm.toLowerCase();
+    return accounts.filter((acc) =>
+      [acc.fullName, acc.email, acc.mobileNumber].some((field) =>
+        (field || "").toLowerCase().includes(lowerTerm)
+      )
+    );
+  }, [accounts, searchTerm]);
 
   return (
     <Container className="mt-4">
       <h3>View Accounts</h3>
-
       {error && <Alert variant="danger">{error}</Alert>}
 
-      <div className="d-flex justify-content-between mb-3">
-        <Form.Control
-          type="text"
-          placeholder="Search..."
-          className="w-25"
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
-        <Form.Select
-          className="w-auto"
-          value={size}
-          onChange={(e) => {
-            setPage(0);
-            setSize(parseInt(e.target.value));
-          }}
-        >
-          <option value={5}>5 records</option>
-          <option value={10}>10 records</option>
-          <option value={50}>50 records</option>
-          <option value={100}>100 records</option>
-        </Form.Select>
-      </div>
+      <Row className="mb-3">
+        <Col md={6}>
+          <Form.Control
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </Col>
+        <Col md="auto">
+          <Form.Select
+            value={size}
+            onChange={(e) => {
+              setPage(0);
+              setSize(Number(e.target.value));
+            }}
+          >
+            {[5, 10, 50, 100].map((val) => (
+              <option key={val} value={val}>
+                {val} records
+              </option>
+            ))}
+          </Form.Select>
+        </Col>
+      </Row>
 
       {loading ? (
         <div className="text-center">
@@ -99,51 +131,107 @@ const ViewAccounts = () => {
         </div>
       ) : (
         <>
-          <Table striped bordered hover responsive>
+          <Table responsive striped bordered hover>
             <thead className="table-light">
               <tr>
                 <th>S.NO</th>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Mobile Number</th>
+                <th>Mobile</th>
                 <th>Gender</th>
                 <th>SSN</th>
-                <th>Edit</th>
-                <th>Delete</th>
-                <th>Action</th>
+                <th className="text-center" colSpan={3}>
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
-              {filteredAccounts.length > 0 ? (
-                filteredAccounts.map((account, index) => (
-                  <tr key={account.id}>
-                    <td>{page * size + index + 1}</td>
-                    <td>{account.fullName}</td>
-                    <td>{account.email}</td>
-                    <td>{account.mobileNumber}</td>
-                    <td>{account.gender}</td>
-                    <td>{account.ssNumber}</td>
-                    <td>
-                      <Button variant="primary" size="sm">
-                        <FaEdit /> Edit
-                      </Button>
-                    </td>
-                    <td>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDelete(account.id)}
-                      >
-                        <FaTrash /> Delete
-                      </Button>
-                    </td>
-                    <td>
-                      <Button variant="info" size="sm">
-                        Details
-                      </Button>
-                    </td>
-                  </tr>
-                ))
+              {filteredAccounts.length ? (
+                filteredAccounts.map((acc, idx) => {
+                  const isFirstRecord = idx === 0;
+                  const isEditing = editingAccountId === acc.id && !isFirstRecord;
+
+                  return (
+                    <tr key={acc.id}>
+                      <td>{page * size + idx + 1}</td>
+                      <td>
+                        {isEditing ? (
+                          <Form.Control
+                            size="sm"
+                            name="fullName"
+                            value={acc.fullName}
+                            onChange={(e) => handleChange(e, acc.id)}
+                            disabled={isFirstRecord}
+                          />
+                        ) : (
+                          acc.fullName
+                        )}
+                      </td>
+                      <td>{acc.email}</td>
+                      <td>
+                        {isEditing ? (
+                          <Form.Control
+                            size="sm"
+                            name="mobileNumber"
+                            value={acc.mobileNumber}
+                            onChange={(e) => handleChange(e, acc.id)}
+                            disabled={isFirstRecord}
+                          />
+                        ) : (
+                          acc.mobileNumber
+                        )}
+                      </td>
+                      <td>
+                        {isEditing ? (
+                          <Form.Select
+                            size="sm"
+                            name="gender"
+                            value={acc.gender}
+                            onChange={(e) => handleChange(e, acc.id)}
+                            disabled={isFirstRecord}
+                          >
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                          </Form.Select>
+                        ) : (
+                          acc.gender
+                        )}
+                      </td>
+                      <td>{acc.ssNumber}</td>
+                      <td colSpan={3}>
+                        <div className="d-flex justify-content-center gap-2 flex-wrap">
+                          <Button
+                            size="sm"
+                            variant={isEditing ? "secondary" : "primary"}
+                            onClick={() => handleEdit(acc.id)}
+                            disabled={isFirstRecord}
+                          >
+                            {isEditing ? "Cancel" : <FaEdit />}
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDelete(acc.id)}
+                            disabled={isFirstRecord}
+                          >
+                            <FaTrash />
+                          </Button>
+                          {isEditing && (
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => handleSave(acc)}
+                              disabled={isFirstRecord}
+                            >
+                              Save
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan="9" className="text-center">
@@ -154,10 +242,10 @@ const ViewAccounts = () => {
             </tbody>
           </Table>
 
-          <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+          <div className="d-flex justify-content-center align-items-center gap-3 mt-3 flex-wrap">
             <Button
               variant="secondary"
-              onClick={() => setPage((prev) => prev - 1)}
+              onClick={() => setPage((p) => p - 1)}
               disabled={page === 0}
             >
               Previous
@@ -167,7 +255,7 @@ const ViewAccounts = () => {
             </span>
             <Button
               variant="secondary"
-              onClick={() => setPage((prev) => prev + 1)}
+              onClick={() => setPage((p) => p + 1)}
               disabled={page + 1 === totalPages}
             >
               Next
