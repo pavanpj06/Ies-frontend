@@ -1,10 +1,36 @@
 import React from "react";
-import { Container, Row, Col, Card, Navbar, Nav, Form, InputGroup, Accordion } from "react-bootstrap";
-import { FaSearch, FaShoppingCart, FaMoneyBill, FaUsers, FaHeart, FaBars } from "react-icons/fa";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Navbar,
+  Nav,
+  Form,
+  InputGroup,
+  Accordion,
+  Dropdown,
+} from "react-bootstrap";
+import {
+  FaSearch,
+  FaShoppingCart,
+  FaMoneyBill,
+  FaUsers,
+  FaHeart,
+  FaBars,
+} from "react-icons/fa";
 import { BiClipboard } from "react-icons/bi";
-import { Outlet } from "react-router-dom"; 
+import { Outlet } from "react-router-dom";
 
 const Dashboard = () => {
+  const handleLogout = () => {
+    // Clear any authentication-related storage
+    localStorage.removeItem("authToken");
+    sessionStorage.clear();
+    // Redirect to login
+    window.location.href = "/";
+  };
+
   return (
     <div className="d-flex">
       {/* Sidebar */}
@@ -67,7 +93,7 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="content flex-grow-1">
-        <Navbar bg="white" className="shadow-sm px-3">
+        <Navbar bg="white" className="shadow-sm px-3 d-flex align-items-center">
           <FaBars size={24} className="me-3" />
           <Form className="d-flex w-100">
             <InputGroup>
@@ -77,16 +103,24 @@ const Dashboard = () => {
               </InputGroup.Text>
             </InputGroup>
           </Form>
-          <div className="ms-3">
-            <img
-              src="https://via.placeholder.com/40"
-              alt="User"
-              className="rounded-circle"
-            />
-          </div>
+          <Dropdown align="end" className="ms-3">
+            <Dropdown.Toggle variant="light" className="border-0 p-0 bg-transparent">
+              <img
+                src="https://via.placeholder.com/40"
+                alt="User"
+                className="rounded-circle"
+                style={{ width: "40px", height: "40px" }}
+              />
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item href="/dashboard-page/profile">Profile</Dropdown.Item>
+              <Dropdown.Divider />
+              <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
         </Navbar>
 
-        {/* Default Dashboard Cards */}
+        {/* Dashboard Cards */}
         <Container className="mt-4">
           <Row>
             <Col md={3}>
@@ -132,7 +166,7 @@ const Dashboard = () => {
           </Row>
         </Container>
 
-        {/* 👇 Renders nested route here */}
+        {/* Nested Routes Outlet */}
         <div className="mt-4 px-4">
           <Outlet />
         </div>
