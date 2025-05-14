@@ -18,6 +18,8 @@ import EducationDetailsPage from "./EducationDetails";
 import KidDetailsFormPage from "./KidDetailsForm";
 import EligibilityFormPage from "./EligibilityForm";
 import ViewPlansPage from "./ViewPlans";
+
+import UserProfilePage from "./UserProfile";
 function App() {
   return (
     <Router>
@@ -42,6 +44,8 @@ function App() {
           <Route path="education-details-page" element={<EducationDetailsPage />} />
           <Route path="kid-details-form-page" element={<KidDetailsFormPage />} />
           <Route path="eligibility-form-page" element={<EligibilityFormPage />} />
+          <Route path="profile" element={<UserProfilePage />} />
+
         </Route>
       </Routes>
     </Router>

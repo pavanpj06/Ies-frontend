@@ -50,19 +50,25 @@ const ViewAccounts = () => {
 
   const handleDelete = async (userId) => {
     if (!window.confirm("Are you sure you want to delete this account?")) return;
+
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`${BASE_URL}/delete-by-id/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axios.delete(`${BASE_URL}/delete-by-id/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      fetchAccounts();
-    } catch {
-      alert("Failed to delete account. Please try again.");
-    }
-  };
 
-  const handleEdit = (accountId) => {
-    setEditingAccountId((prev) => (prev === accountId ? null : accountId));
+      if (response.status === 200 && response.data.message) {
+        alert(response.data.message); // Optional: Show success message
+        fetchAccounts(); // Refresh list
+      } else {
+        throw new Error("Unexpected response");
+      }
+    } catch (error) {
+      alert("Failed to delete account. Please try again later.");
+      console.error("Delete error:", error);
+    }
   };
 
   const handleChange = (e, accountId) => {
@@ -204,19 +210,23 @@ const ViewAccounts = () => {
                           <Button
                             size="sm"
                             variant={isEditing ? "secondary" : "primary"}
-                            onClick={() => handleEdit(acc.id)}
+                            onClick={() => setEditingAccountId(isEditing ? null : acc.id)}
                             disabled={isFirstRecord}
                           >
                             {isEditing ? "Cancel" : <FaEdit />}
                           </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDelete(acc.id)}
-                            disabled={isFirstRecord}
-                          >
-                            <FaTrash />
-                          </Button>
+
+                          {!isEditing && (
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleDelete(acc.id)}
+                              disabled={isFirstRecord}
+                            >
+                              <FaTrash />
+                            </Button>
+                          )}
+
                           {isEditing && (
                             <Button
                               variant="success"
