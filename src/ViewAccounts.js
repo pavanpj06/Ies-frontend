@@ -10,7 +10,7 @@ import {
   Col,
 } from "react-bootstrap";
 import axios from "axios";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -19,22 +19,25 @@ const ViewAccounts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editingAccountId, setEditingAccountId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState(null);
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(10);
+  const [size, setSize] = useState(5);
   const [totalPages, setTotalPages] = useState(0);
+  const [sortField, setSortField] = useState("fullName");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
     fetchAccounts();
     // eslint-disable-next-line
-  }, [page, size]);
+  }, [page, size, sortField, sortOrder]);
 
   const fetchAccounts = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       const { data } = await axios.get(
-        `${BASE_URL}/fetch-all-user-accounts?page=${page}&size=${size}`,
+        `${BASE_URL}/fetch-all-user-accounts?page=${page}&size=${size}&sortField=${sortField}&sortOrder=${sortOrder}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setAccounts(data.content);
@@ -48,43 +51,66 @@ const ViewAccounts = () => {
     }
   };
 
-  const handleDelete = async (userId) => {
-    if (!window.confirm("Are you sure you want to delete this account?")) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.delete(`${BASE_URL}/delete-by-id/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.status === 200 && response.data.message) {
-        alert(response.data.message); // Optional: Show success message
-        fetchAccounts(); // Refresh list
-      } else {
-        throw new Error("Unexpected response");
-      }
-    } catch (error) {
-      alert("Failed to delete account. Please try again later.");
-      console.error("Delete error:", error);
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
     }
   };
 
-  const handleChange = (e, accountId) => {
-    const { name, value } = e.target;
-    setAccounts((prev) =>
-      prev.map((acc) => (acc.id === accountId ? { ...acc, [name]: value } : acc))
-    );
+  const renderSortIcon = (field) => {
+    if (sortField !== field) return <FaSort />;
+    return sortOrder === "asc" ? <FaSortUp /> : <FaSortDown />;
   };
 
-  const handleSave = async (account) => {
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this account?");
+    if (!confirmDelete) return;
+
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`${BASE_URL}/edit-user-account/${account.id}`, account, {
+      const res = await axios.delete(`${BASE_URL}/delete-by-id/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setEditingAccountId(null);
+
+      if (res.status === 200 && res.data.message) {
+        alert(res.data.message);
+        fetchAccounts();
+      } else {
+        throw new Error("Delete failed");
+      }
+    } catch (err) {
+      alert("Failed to delete account. Please try again.");
+      console.error(err);
+    }
+  };
+
+  const startEditing = (account) => {
+    setEditingId(account.id);
+    setEditForm({ ...account });
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditForm(null);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${BASE_URL}/edit-user-account/${editForm.id}`,
+        editForm,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      cancelEditing();
       fetchAccounts();
     } catch {
       alert("Failed to save changes. Please try again.");
@@ -92,40 +118,40 @@ const ViewAccounts = () => {
   };
 
   const filteredAccounts = useMemo(() => {
-    const lowerTerm = searchTerm.toLowerCase();
+    const term = searchTerm.toLowerCase();
     return accounts.filter((acc) =>
       [acc.fullName, acc.email, acc.mobileNumber].some((field) =>
-        (field || "").toLowerCase().includes(lowerTerm)
+        (field || "").toLowerCase().includes(term)
       )
     );
   }, [accounts, searchTerm]);
 
   return (
     <Container className="mt-4">
-      <h3>View Accounts</h3>
+      <h4 className="mb-3" style={{ fontSize: "1.25rem" }}>View Accounts</h4>
       {error && <Alert variant="danger">{error}</Alert>}
 
-      <Row className="mb-3">
+      <Row className="mb-2 align-items-center">
         <Col md={6}>
           <Form.Control
             type="text"
             placeholder="Search..."
+            size="sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </Col>
         <Col md="auto">
           <Form.Select
+            size="sm"
             value={size}
             onChange={(e) => {
               setPage(0);
               setSize(Number(e.target.value));
             }}
           >
-            {[5, 10, 50, 100].map((val) => (
-              <option key={val} value={val}>
-                {val} records
-              </option>
+            {[5, 10, 50, 100].map((n) => (
+              <option key={n} value={n}>{n} records</option>
             ))}
           </Form.Select>
         </Col>
@@ -137,37 +163,45 @@ const ViewAccounts = () => {
         </div>
       ) : (
         <>
-          <Table responsive striped bordered hover>
+          <Table responsive striped bordered hover size="sm">
             <thead className="table-light">
-              <tr>
+              <tr style={{ fontSize: "0.9rem" }}>
                 <th>S.NO</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Mobile</th>
-                <th>Gender</th>
-                <th>SSN</th>
-                <th className="text-center" colSpan={3}>
-                  Actions
+                <th style={{ cursor: "pointer" }} onClick={() => handleSort("fullName")}>
+                  Name {renderSortIcon("fullName")}
                 </th>
+                <th style={{ cursor: "pointer" }} onClick={() => handleSort("email")}>
+                  Email {renderSortIcon("email")}
+                </th>
+                <th style={{ cursor: "pointer" }} onClick={() => handleSort("mobileNumber")}>
+                  Mobile {renderSortIcon("mobileNumber")}
+                </th>
+                <th style={{ cursor: "pointer" }} onClick={() => handleSort("gender")}>
+                  Gender {renderSortIcon("gender")}
+                </th>
+                <th style={{ cursor: "pointer" }} onClick={() => handleSort("ssNumber")}>
+                  SSN {renderSortIcon("ssNumber")}
+                </th>
+                <th className="text-center" colSpan={3}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredAccounts.length ? (
+              {filteredAccounts.length > 0 ? (
                 filteredAccounts.map((acc, idx) => {
-                  const isFirstRecord = idx === 0;
-                  const isEditing = editingAccountId === acc.id && !isFirstRecord;
+                  const isEditing = editingId === acc.id;
+                  const isFirst = idx === 0;
 
                   return (
-                    <tr key={acc.id}>
+                    <tr key={acc.id} style={{ fontSize: "0.88rem" }}>
                       <td>{page * size + idx + 1}</td>
                       <td>
                         {isEditing ? (
                           <Form.Control
                             size="sm"
                             name="fullName"
-                            value={acc.fullName}
-                            onChange={(e) => handleChange(e, acc.id)}
-                            disabled={isFirstRecord}
+                            value={editForm.fullName}
+                            onChange={handleEditChange}
+                            disabled={isFirst}
                           />
                         ) : (
                           acc.fullName
@@ -179,9 +213,9 @@ const ViewAccounts = () => {
                           <Form.Control
                             size="sm"
                             name="mobileNumber"
-                            value={acc.mobileNumber}
-                            onChange={(e) => handleChange(e, acc.id)}
-                            disabled={isFirstRecord}
+                            value={editForm.mobileNumber}
+                            onChange={handleEditChange}
+                            disabled={isFirst}
                           />
                         ) : (
                           acc.mobileNumber
@@ -192,9 +226,9 @@ const ViewAccounts = () => {
                           <Form.Select
                             size="sm"
                             name="gender"
-                            value={acc.gender}
-                            onChange={(e) => handleChange(e, acc.id)}
-                            disabled={isFirstRecord}
+                            value={editForm.gender}
+                            onChange={handleEditChange}
+                            disabled={isFirst}
                           >
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
@@ -207,35 +241,42 @@ const ViewAccounts = () => {
                       <td>{acc.ssNumber}</td>
                       <td colSpan={3}>
                         <div className="d-flex justify-content-center gap-2 flex-wrap">
-                          <Button
-                            size="sm"
-                            variant={isEditing ? "secondary" : "primary"}
-                            onClick={() => setEditingAccountId(isEditing ? null : acc.id)}
-                            disabled={isFirstRecord}
-                          >
-                            {isEditing ? "Cancel" : <FaEdit />}
-                          </Button>
-
-                          {!isEditing && (
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleDelete(acc.id)}
-                              disabled={isFirstRecord}
-                            >
-                              <FaTrash />
-                            </Button>
-                          )}
-
-                          {isEditing && (
-                            <Button
-                              variant="success"
-                              size="sm"
-                              onClick={() => handleSave(acc)}
-                              disabled={isFirstRecord}
-                            >
-                              Save
-                            </Button>
+                          {!isEditing ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="primary"
+                                onClick={() => startEditing(acc)}
+                                disabled={isFirst}
+                              >
+                                <FaEdit />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                onClick={() => handleDelete(acc.id)}
+                                disabled={isFirst}
+                              >
+                                <FaTrash />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={cancelEditing}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="success"
+                                onClick={handleSave}
+                              >
+                                Save
+                              </Button>
+                            </>
                           )}
                         </div>
                       </td>
@@ -252,24 +293,47 @@ const ViewAccounts = () => {
             </tbody>
           </Table>
 
-          <div className="d-flex justify-content-center align-items-center gap-3 mt-3 flex-wrap">
-            <Button
-              variant="secondary"
-              onClick={() => setPage((p) => p - 1)}
-              disabled={page === 0}
-            >
-              Previous
-            </Button>
-            <span>
-              Page {page + 1} of {totalPages}
-            </span>
-            <Button
-              variant="secondary"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page + 1 === totalPages}
-            >
-              Next
-            </Button>
+          <div className="d-flex justify-content-between align-items-center flex-wrap mt-3">
+            <div className="d-flex align-items-center gap-3">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setPage((prev) => prev - 1)}
+                disabled={page === 0}
+              >
+                Previous
+              </Button>
+              <span style={{ fontSize: "0.9rem" }}>
+                Page {page + 1} of {totalPages}
+              </span>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setPage((prev) => prev + 1)}
+                disabled={page + 1 === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+
+            <div className="d-flex gap-2 mt-2 mt-sm-0">
+              <a
+                href={`${BASE_URL}/download/excel`}
+                className="btn btn-success btn-sm"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download Excel
+              </a>
+              <a
+                href={`${BASE_URL}/download/csv`}
+                className="btn btn-info btn-sm"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download CSV
+              </a>
+            </div>
           </div>
         </>
       )}
