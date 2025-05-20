@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { saveAs } from "file-saver";
 import {
   Table,
   Button,
@@ -26,7 +27,7 @@ const ViewAccounts = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [sortField, setSortField] = useState("fullName");
   const [sortOrder, setSortOrder] = useState("asc");
-
+const [downloadingExcel, setDownloadingExcel] = useState(false);
   useEffect(() => {
     fetchAccounts();
     // eslint-disable-next-line
@@ -125,6 +126,56 @@ const ViewAccounts = () => {
       )
     );
   }, [accounts, searchTerm]);
+
+
+
+
+
+  const handleExcelDownload = async () => {
+     setDownloadingExcel(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${BASE_URL}/export-records-inexcel`, {
+        responseType: "blob",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      saveAs(blob, "Accounts.xlsx");
+    } catch (error) {
+      alert("Failed to download Excel");
+      console.error(error);
+    }
+
+    finally {
+      setDownloadingExcel(false);  // stop loading
+    }
+  };
+const handleTxtDownload = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(`${BASE_URL}/download/accounts-txt`, {
+      responseType: "blob",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const blob = new Blob([response.data], {
+      type: "text/plain",
+    });
+
+    saveAs(blob, "Accounts.txt");
+  } catch (error) {
+    alert("Failed to download TXT file");
+    console.error(error);
+  }
+};
 
   return (
     <Container className="mt-4">
@@ -317,14 +368,43 @@ const ViewAccounts = () => {
             </div>
 
             <div className="d-flex gap-2 mt-2 mt-sm-0">
-              <a
+              {/* <a
                 href={`${BASE_URL}/download/excel`}
                 className="btn btn-success btn-sm"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Download Excel
-              </a>
+              </a> */}
+              {/* <Button size="sm" variant="success" onClick={handleExcelDownload}>
+                Download Excel
+              </Button> */}
+
+              <Button
+        size="sm"
+        variant="success"
+        onClick={handleExcelDownload}
+        disabled={downloadingExcel}
+      >
+        {downloadingExcel ? (
+          <>
+            <Spinner
+              as="span"
+              animation="border"
+              size="sm"
+              role="status"
+              aria-hidden="true"
+              className="me-2"
+            />
+            Downloading...
+          </>
+        ) : (
+          "Download Excel"
+        )}
+      </Button>
+ <Button size="sm" variant="warning" onClick={handleTxtDownload}>
+    Download TXT
+  </Button>
               <a
                 href={`${BASE_URL}/download/csv`}
                 className="btn btn-info btn-sm"
