@@ -406,7 +406,7 @@ const handleTxtDownload = async () => {
     Download TXT
   </Button>
               <a
-                href={`${BASE_URL}/download/csv`}
+                href="/Currentlyworking"
                 className="btn btn-info btn-sm"
                 target="_blank"
                 rel="noopener noreferrer"
