@@ -1,58 +1,72 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
-
-// const clientId = "YOUR_GOOGLE_CLIENT_ID"; // Uncomment if using Google login
+import axios from "axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [greeting, setGreeting] = useState("Welcome Back!");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
   const BASE_URL = process.env.REACT_APP_BASE_URL;
 
+  // Fetch greeting message from backend
+  useEffect(() => {
+    const fetchGreeting = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/get-message-basedon-time`);
+        setGreeting(res.data.message);
+      } catch (err) {
+        console.error("Error fetching greeting:", err);
+        setGreeting("Welcome Back!");
+      }
+    };
+    fetchGreeting();
+  }, [BASE_URL]);
+
+  // Login handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
     try {
-      const response = await fetch(`${BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const response = await axios.post(`${BASE_URL}/auth/login`, {
+        email,
+        password,
       });
 
-      const data = await response.json();
-      console.log("Login Response:", data);
-
-      if (response.ok) {
-        // Save JWT and email to localStorage
-        console.log(data.token);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userEmail", data.email);
-        // const emailMatch = data.message.match(/email=([^&]+)/);
-        // const email = emailMatch ? decodeURIComponent(emailMatch[1]) : null;
-        // Redirect to dashboard
-        navigate("/dashboard-page");
-      } else {
-        throw new Error(data.message || "Invalid credentials");
-      }
+      const data = response.data;
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userEmail", data.email);
+      navigate("/dashboard-page");
     } catch (err) {
       console.error("Login Error:", err);
-      setError(err.message);
+      setError(err.response?.data?.message || "Something went wrong. Please try again.");
     }
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div className="card p-4 shadow-lg" style={{ width: "350px" }}>
-        <h3 className="text-center mb-4">Login</h3>
+    <div
+      className="d-flex justify-content-center align-items-center vh-100"
+      style={{
+        background: "linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)",
+      }}
+    >
+      <div
+        className="shadow-lg p-4 rounded-4 bg-white"
+        style={{ width: "400px", backdropFilter: "blur(10px)" }}
+      >
+        <h2 className="text-center text-primary mb-3">{greeting}</h2>
+        <h4 className="text-center mb-4">Login</h4>
         {error && <p className="text-danger text-center">{error}</p>}
+        
         <form onSubmit={handleSubmit}>
           <div className="mb-3 input-group">
-            <span className="input-group-text"><FaEnvelope /></span>
+            <span className="input-group-text bg-light">
+              <FaEnvelope />
+            </span>
             <input
               type="email"
               className="form-control"
@@ -62,8 +76,11 @@ const Login = () => {
               required
             />
           </div>
+
           <div className="mb-3 input-group">
-            <span className="input-group-text"><FaLock /></span>
+            <span className="input-group-text bg-light">
+              <FaLock />
+            </span>
             <input
               type="password"
               className="form-control"
@@ -73,27 +90,17 @@ const Login = () => {
               required
             />
           </div>
-          <button type="submit" className="btn btn-warning w-100">Login</button>
+
+          <button type="submit" className="btn btn-primary w-100">
+            Login
+          </button>
         </form>
 
-        {/* Optional Google Login - Add back if needed */}
-        {/* <div className="d-flex justify-content-center my-3">
-          <GoogleLogin
-            clientId={clientId}
-            buttonText="Login with Google"
-            onSuccess={handleGoogleSuccess}
-            onFailure={handleGoogleFailure}
-            cookiePolicy={"single_host_origin"}
-            className="w-100"
-          />
-        </div> */}
-
         <p className="text-center mt-3">
-          <Link to="/forgot-password-page">Forgot Password?</Link>
+          <Link to="/forgot-password-page" className="text-decoration-none text-muted">
+            Forgot Password?
+          </Link>
         </p>
-        {/* <p className="text-center mt-2">
-          Don't have an account? <Link to="/signup-form">Sign up</Link>
-        </p> */}
       </div>
     </div>
   );
