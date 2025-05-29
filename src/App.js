@@ -18,6 +18,7 @@ import EducationDetailsPage from "./EducationDetails";
 import KidDetailsFormPage from "./KidDetailsForm";
 import EligibilityFormPage from "./EligibilityForm";
 import ViewPlansPage from "./ViewPlans";
+import ViewApplicationPage from "./ViewApplication";
 
 import UserProfilePage from "./UserProfile";
 function App() {
@@ -45,6 +46,7 @@ function App() {
           <Route path="kid-details-form-page" element={<KidDetailsFormPage />} />
           <Route path="eligibility-form-page" element={<EligibilityFormPage />} />
           <Route path="profile" element={<UserProfilePage />} />
+                    <Route path="view-applications" element={<ViewApplicationPage/>} />
 
         </Route>
       </Routes>

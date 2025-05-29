@@ -97,9 +97,10 @@ const Login = () => {
         </form>
 
         <p className="text-center mt-3">
-          <Link to="/forgot-password-page" className="text-decoration-none text-muted">
-            Forgot Password?
-          </Link>
+          <Link to="/forgot-password-page" className="text-decoration-underline text-primary">
+  Forgot Password?
+</Link>
+
         </p>
       </div>
     </div>

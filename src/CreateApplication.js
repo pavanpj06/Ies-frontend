@@ -12,6 +12,9 @@ const CreateApplication = () => {
     ssn: "",
   });
 
+
+  const ARAPI_URL= process.env.REACT_APP_AR_API_URL;
+
   const [submittedMessage, setSubmittedMessage] = useState(""); // New state
 
   const handleChange = (e) => {
@@ -22,7 +25,12 @@ const CreateApplication = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:9572/create-application', formData, {
+
+       const preparedData = {
+      ...formData,
+      ssn: Number(formData.ssn),
+    };
+      const response = await axios.post(`${ARAPI_URL}/create-application`, preparedData, {
         headers: {
           'Content-Type': 'application/json',
         },

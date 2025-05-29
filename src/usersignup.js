@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
-import { FaEnvelope, FaLock, FaUser, FaPhone } from "react-icons/fa";
+import { FaEnvelope,  FaUser, FaPhone } from "react-icons/fa";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
