@@ -9,6 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [greeting, setGreeting] = useState("Welcome Back!");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -30,6 +31,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
 
     try {
       const response = await axios.post(`${BASE_URL}/auth/login`, {
@@ -44,6 +46,8 @@ const Login = () => {
     } catch (err) {
       console.error("Login Error:", err);
       setError(err.response?.data?.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,8 +64,9 @@ const Login = () => {
       >
         <h2 className="text-center text-primary mb-3">{greeting}</h2>
         <h4 className="text-center mb-4">Login</h4>
+
         {error && <p className="text-danger text-center">{error}</p>}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="mb-3 input-group">
             <span className="input-group-text bg-light">
@@ -91,16 +96,26 @@ const Login = () => {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary w-100">
-            Login
+          <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Logging in...
+              </>
+            ) : (
+              "Login"
+            )}
           </button>
         </form>
 
         <p className="text-center mt-3">
           <Link to="/forgot-password-page" className="text-decoration-underline text-primary">
-  Forgot Password?
-</Link>
-
+            Forgot Password?
+          </Link>
         </p>
       </div>
     </div>
