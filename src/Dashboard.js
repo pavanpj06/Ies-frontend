@@ -25,14 +25,23 @@ import { Outlet } from "react-router-dom";
 
 const Dashboard = () => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-  const [planStats, setPlanStats] = useState(null); // Corrected: previously planCount
+  const [planStats, setPlanStats] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
+  // Toggle Light/Dark Theme
+  const toggleTheme = () => {
+    setDarkMode((prev) => !prev);
+    document.body.className = darkMode ? "light-mode" : "dark-mode";
+  };
+
+  // Logout User
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     sessionStorage.clear();
     window.location.href = "/";
   };
 
+  // Fetch Plan Statistics
   useEffect(() => {
     const fetchPlanStats = async () => {
       try {
@@ -45,7 +54,7 @@ const Dashboard = () => {
             },
           }
         );
-        setPlanStats(data); // Set the correct response to planStats
+        setPlanStats(data);
       } catch (error) {
         console.error("Failed to fetch plan stats:", error);
       }
@@ -58,13 +67,26 @@ const Dashboard = () => {
     <div className="d-flex">
       {/* Sidebar */}
       <div
-        className={`sidebar bg-light p-3 vh-100 ${isSidebarVisible ? "" : "d-none"}`}
+        className={`sidebar p-3 vh-100 ${isSidebarVisible ? "bg-light" : "d-none"}`}
         style={{ width: "250px", overflowY: "auto" }}
       >
         <h4 className="text-danger fw-bold">IES Integration</h4>
+
+        {/* Theme Switch */}
+        <Form.Check
+          type="switch"
+          id="theme-switch"
+          label={darkMode ? "🌙 Dark" : "☀️ Light"}
+          checked={darkMode}
+          onChange={toggleTheme}
+          className="ms-2 mb-3"
+        />
+
+        {/* Navigation */}
         <Nav className="flex-column">
           <Nav.Link href="#">📊 Dashboard</Nav.Link>
-          <Accordion alwaysOpen defaultActiveKey={[]}>
+
+          <Accordion alwaysOpen>
             <Accordion.Item eventKey="1">
               <Accordion.Header>📋 Application Registration</Accordion.Header>
               <Accordion.Body className="p-0 ps-3">
@@ -127,13 +149,15 @@ const Dashboard = () => {
               </InputGroup.Text>
             </InputGroup>
           </Form>
+
           <Dropdown align="end" className="ms-3">
-            <Dropdown.Toggle variant="light" className="border-0 p-0 bg-transparent">
+            <Dropdown.Toggle variant="light" className="border-0 bg-transparent">
               <img
                 src="https://via.placeholder.com/40"
                 alt="User"
                 className="rounded-circle"
-                style={{ width: "40px", height: "40px" }}
+                width="40"
+                height="40"
               />
             </Dropdown.Toggle>
             <Dropdown.Menu>
@@ -159,6 +183,7 @@ const Dashboard = () => {
                 </Card.Body>
               </Card>
             </Col>
+
             <Col md={3}>
               <Card className="text-white bg-danger">
                 <Card.Body>
@@ -169,6 +194,7 @@ const Dashboard = () => {
                 </Card.Body>
               </Card>
             </Col>
+
             <Col md={3}>
               <Card className="text-white bg-warning">
                 <Card.Body>
@@ -179,6 +205,7 @@ const Dashboard = () => {
                 </Card.Body>
               </Card>
             </Col>
+
             <Col md={3}>
               <Card className="text-white bg-info">
                 <Card.Body>
@@ -192,7 +219,7 @@ const Dashboard = () => {
           </Row>
         </Container>
 
-        {/* Nested Routes */}
+        {/* Outlet for Nested Pages */}
         <div className="mt-4 px-4">
           <Outlet />
         </div>

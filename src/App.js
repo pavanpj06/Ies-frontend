@@ -19,7 +19,9 @@ import KidDetailsFormPage from "./KidDetailsForm";
 import EligibilityFormPage from "./EligibilityForm";
 import ViewPlansPage from "./ViewPlans";
 import ViewApplicationPage from "./ViewApplication";
+import TaskPage from"./TaskForm";
 
+import ContactMeFormPage from "./ContactMeForm";
 import UserProfilePage from "./UserProfile";
 function App() {
   return (
@@ -31,7 +33,8 @@ function App() {
         <Route path="/forgot-password-page" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ChangePassword />} />
         <Route path="/resetting-password" element={<ResettingPassword />} />
-
+  <Route path="/contact-me" element={< ContactMeFormPage/>}/>
+      <Route path="/task-form" element={<  TaskPage/>}/>
         {/* Dashboard and nested pages */}
         <Route path="/dashboard-page" element={<Dashboard />}>
           <Route path="user-account-creation" element={<CreateAccountPage/>} />
@@ -47,6 +50,9 @@ function App() {
           <Route path="eligibility-form-page" element={<EligibilityFormPage />} />
           <Route path="profile" element={<UserProfilePage />} />
                     <Route path="view-applications" element={<ViewApplicationPage/>} />
+
+
+                     
 
         </Route>
       </Routes>
